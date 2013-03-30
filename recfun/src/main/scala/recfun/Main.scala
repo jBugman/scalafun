@@ -12,7 +12,7 @@ object Main {
   }
 
   /**
-   * Exercise 1
+   * Pascal's triangle
    */
   def pascal(c: Int, r: Int): Int = {
     if (r < 0 || c < 0 || c > r) throw new IllegalArgumentException
@@ -20,12 +20,28 @@ object Main {
   }
 
   /**
-   * Exercise 2
+   * Parentheses balance
    */
-  def balance(chars: List[Char]): Boolean = ???
+  def balance(chars: List[Char]): Boolean = {
+    def balanced(chars: List[Char], balance: Int): Boolean = {
+      if (chars.isEmpty)
+        balance == 0
+      else
+        if (chars.head == '(')
+          balanced(chars.tail, balance + 1)
+        else if (chars.head == ')')
+          if (balance > 0)
+            balanced(chars.tail, balance - 1)
+          else
+            false
+        else
+          balanced(chars.tail, balance)
+    }
+    balanced(chars, 0)
+  }
 
   /**
-   * Exercise 3
+   * Change variants count
    */
   def countChange(money: Int, coins: List[Int]): Int = ???
 }
