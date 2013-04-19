@@ -66,7 +66,7 @@ object TweetReader {
                  (sites(6) -> mashableTweets))
 
   val tweetSets: List[TweetSet] = sources.map(tweets => toTweetSet(tweets))
-  
+
   private val siteTweetSetMap: Map[String, TweetSet] =
     Map() ++ (sites zip tweetSets)
 
@@ -74,5 +74,8 @@ object TweetReader {
     if (curSets.isEmpty) acc
     else unionOfAllTweetSets(curSets.tail, acc.union(curSets.head))
 
-  val allTweets: TweetSet = unionOfAllTweetSets(tweetSets, new Empty)
+  val allTweets: TweetSet = {
+    TweetSetHelper.makeSet(sources.flatten)
+  }
+  //unionOfAllTweetSets(tweetSets, new Empty)
 }

@@ -31,8 +31,20 @@ class Tweet(val user: String, val text: String, val retweets: Int) {
  *
  * [1] http://en.wikipedia.org/wiki/Binary_search_tree
  */
-abstract class TweetSet {
 
+
+object TweetSetHelper {
+  def makeSet(xs: List[Tweet]):TweetSet = {
+    def makeSetIter(xs: List[Tweet], acc:TweetSet):TweetSet = {
+      if (xs.isEmpty) acc
+      else makeSetIter(xs.tail, acc incl xs.head)
+    }
+    makeSetIter(xs, new Empty)
+  }
+}
+
+
+abstract class TweetSet {
   /**
    * This method takes a predicate and returns a subset of all the elements
    * in the original set for which the predicate is true.
@@ -45,7 +57,7 @@ abstract class TweetSet {
   /**
    * This is a helper method for `filter` that propagates the accumulated tweets.
    */
-  def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet = filter(p)
+  def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet = ???
 
   /**
    * Returns a new `TweetSet` that is the union of `TweetSet`s `this` and `that`.
@@ -106,12 +118,13 @@ abstract class TweetSet {
   def foreach(f: Tweet => Unit): Unit
 
   def isEmpty: Boolean
+
+  def asList:List[Tweet]
 }
 
 class Empty extends TweetSet {
 
   def filter(p: Tweet => Boolean): TweetSet = new Empty
-  // def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet = new Empty
 
   def union(that: TweetSet): TweetSet = that
 
@@ -132,21 +145,17 @@ class Empty extends TweetSet {
   def remove(tweet: Tweet): TweetSet = this
 
   def foreach(f: Tweet => Unit): Unit = ()
+
+  def asList:List[Tweet] = List()
 }
 
-class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
+class NonEmpty(val elem: Tweet, val left: TweetSet, val right: TweetSet) extends TweetSet {
 
-  def filter(p:Tweet => Boolean): TweetSet =
-    if (p(elem))
-      (left.filter(p) union right.filter(p)) incl elem
-    else
-      (left.filter(p) union right.filter(p))
+  def asList:List[Tweet] = elem::(left.asList ++ right.asList)
 
-  // def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet = filter p
-      // if (p(elem)) remove(elem).filterAcc(p, acc incl elem) else acc
+  def filter(p:Tweet => Boolean): TweetSet = TweetSetHelper.makeSet(asList.filter(p))
 
-  def union(that: TweetSet): TweetSet =
-    ((left union right) union that) incl elem
+  def union(that: TweetSet): TweetSet = TweetSetHelper.makeSet(asList ++ that.asList)
 
   def mostRetweeted: Tweet = {
     def getMax(t1: Tweet, t2: Tweet): Tweet =
@@ -161,14 +170,13 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
   }
 
   def descendingByRetweet: TweetList = {
-    def ascendingAcc(set: TweetSet, acc: TweetList): TweetList = {
-      if (set.isEmpty) acc
+    def makeTweetList(xs: List[Tweet], acc: TweetList): TweetList = {
+      if (xs.isEmpty) acc
       else {
-        val mr = set.mostRetweeted
-        ascendingAcc(set remove mr, new Cons(mr, acc))
+        makeTweetList(xs.tail, new Cons(xs.head, acc))
       }
     }
-    ascendingAcc(this, Nil).reverse
+    makeTweetList(asList.sortBy(tw => tw.retweets), Nil)
   }
 
   def isEmpty: Boolean = false
@@ -230,7 +238,6 @@ class Cons(val head: Tweet, val tail: TweetList) extends TweetList {
     reverseAcc(this, Nil)
   }
 }
-
 
 object GoogleVsApple {
   val google = List("android", "Android", "galaxy", "Galaxy", "nexus", "Nexus")
