@@ -11,7 +11,15 @@ import patmat.Huffman._
 class HuffmanSuite extends FunSuite {
   trait TestTrees {
     val t1 = Fork(Leaf('a',2), Leaf('b',3), List('a','b'), 5)
-    val t2 = Fork(Fork(Leaf('a',2), Leaf('b',3), List('a','b'), 5), Leaf('d',4), List('a','b','d'), 9)
+    val t2 = Fork(
+        Fork(
+            Leaf('a',2),
+            Leaf('b',3),
+            List('a','b'),
+            5
+        ),
+        Leaf('d',4), List('a','b','d'), 9
+      )
   }
 
   test("weight of a larger tree") {
@@ -36,12 +44,56 @@ class HuffmanSuite extends FunSuite {
 
   test("combine of some leaf list") {
     val leaflist = List(Leaf('e', 1), Leaf('t', 2), Leaf('x', 4))
-    assert(combine(leaflist) === List(Fork(Leaf('e',1),Leaf('t',2),List('e', 't'),3), Leaf('x',4)))
+    assert(combine(leaflist) === List(
+      Fork(
+        Leaf('e',1),
+        Leaf('t',2),
+        List('e', 't'),
+        3
+      ),
+      Leaf('x',4))
+    )
   }
 
   test("decode and encode a very short text should be identity") {
     new TestTrees {
       assert(decode(t1, encode(t1)("ab".toList)) === "ab".toList)
+    }
+  }
+  
+  test("decode and encode secret") {
+    new TestTrees {
+      assert(encode(Huffman.frenchCode)("huffmanestcool".toList) === Huffman.secret)
+    }
+  }
+  
+  test("codebits") {
+    val table = List(
+      ('a', List(0, 0)),
+      ('b', List(0, 1)),
+      ('d', List(1))
+    )
+    assert(codeBits(table)('b') === List(0, 1))
+    assert(codeBits(table)('d') === List(1))
+    assert(codeBits(table)('a') === List(0, 0))
+  }
+
+  test("convert") {
+    new TestTrees {
+      val tbl1 = convert(t1)
+      val tbl2 = convert(t2)
+      assert(codeBits(tbl1)('a') === List(0))
+      assert(codeBits(tbl1)('b') === List(1))
+      assert(codeBits(tbl1)('c') === Nil)
+      assert(codeBits(tbl2)('a') === List(0, 0))
+      assert(codeBits(tbl2)('d') === List(1))
+      assert(codeBits(tbl2)('b') === List(0, 1))
+    }
+  }
+  
+  test("quick encode") {
+    new TestTrees {
+      assert(quickEncode(Huffman.frenchCode)("huffmanestcool".toList) === Huffman.secret)
     }
   }
 }
