@@ -79,7 +79,7 @@ object Huffman {
    */
   def times(chars: List[Char]): List[(Char, Int)] = {
       def count(c: Char): (Char, Int) =
-        (c, chars.filter((==)).length)
+        (c, chars.filter(x => x == c).length)
       chars.distinct.map(count)
   }
 
@@ -91,8 +91,7 @@ object Huffman {
    * of a leaf is the frequency of the character.
    */
   def makeOrderedLeafList(freqs: List[(Char, Int)]): List[Leaf] = {
-    def makeList(x: (Char, Int)): Leaf = Leaf(x._1, x._2)
-    freqs.sortBy(_._2).map(makeList)
+    freqs.sortBy(_._2).map(x => Leaf(x._1, x._2))
   }
 
 
@@ -103,8 +102,8 @@ object Huffman {
    * Checks whether the list `trees` contains only one single code tree.
    */
   def singleton(trees: Trees): Boolean = trees match {
+    case x::Nil => true
     case x::xs => false
-    case List(x) => true
     case _ => false
   }
 
@@ -121,7 +120,7 @@ object Huffman {
    * unchanged.
    */
   def combine(trees: Trees): Trees = trees match {
-    case x::y::xs => makeCodeTree(x, y)::xs
+    case x::y::xs => (makeCodeTree(x, y)::xs).sortBy(weight(_))
     case _ => trees
   }
 
@@ -143,7 +142,8 @@ object Huffman {
    *  - try to find sensible parameter names for `xxx`, `yyy` and `zzz`.
    */
   def until(stop: Trees => Boolean, f: Trees => Trees)(trees: Trees): Trees = {
-    if (stop(trees)) trees else f(trees)
+    println(trees)
+    if (stop(trees)) trees else until(stop, f)(f(trees))
   }
 
   /**
@@ -152,8 +152,10 @@ object Huffman {
    * The parameter `chars` is an arbitrary text. This function extracts the character
    * frequencies from that text and creates a code tree based on them.
    */
-  def createCodeTree(chars: List[Char]): CodeTree = 
-    until(singleton, combine)(makeOrderedLeafList(times(chars))).head
+  def createCodeTree(chars: List[Char]): CodeTree = {
+    val orderedLeafs = makeOrderedLeafList(times(chars))
+    until(singleton, combine)(orderedLeafs).head
+  }
 
 
   // Part 3: Decoding

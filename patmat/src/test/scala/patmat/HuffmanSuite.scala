@@ -55,18 +55,32 @@ class HuffmanSuite extends FunSuite {
     )
   }
 
+  test("makeOrderedLeafList of times") {
+    val chars = "asdasazzzzzzzza".toList
+    val list = List(Leaf('d', 1), Leaf('s', 2), Leaf('a', 4), Leaf('z', 8))
+    assert(makeOrderedLeafList(times(chars)) === list)
+  }
+
   test("decode and encode a very short text should be identity") {
     new TestTrees {
       assert(decode(t1, encode(t1)("ab".toList)) === "ab".toList)
     }
   }
-  
+
   test("decode and encode secret") {
     new TestTrees {
       assert(encode(Huffman.frenchCode)("huffmanestcool".toList) === Huffman.secret)
     }
   }
-  
+
+  test("singleton") {
+    new TestTrees {
+      assert(singleton(List(t1)) === true)
+      assert(singleton(List(t1, t2)) === false)
+      assert(singleton(Nil) === false)
+    }
+  }
+
   test("codebits") {
     val table = List(
       ('a', List(0, 0)),
@@ -94,6 +108,20 @@ class HuffmanSuite extends FunSuite {
   test("quick encode") {
     new TestTrees {
       assert(quickEncode(Huffman.frenchCode)("huffmanestcool".toList) === Huffman.secret)
+    }
+  }
+
+  test("times") {
+    assert(times(List('a', 'b', 'a')) === List(('a', 2), ('b', 1)))
+    assert(times("abrkdabrkabraba".toList) === List(('a',5), ('b',4), ('r',3), ('k',2), ('d',1)))
+  }
+
+  test("optimal encode") {
+    new TestTrees {
+      val tList1 = "aaaaaaaabbbcdefgh".toList
+      assert(encode(createCodeTree(tList1))(tList1).length === 41)
+      val tList2 = "beep boop beer!".toList
+      assert(encode(createCodeTree(tList2))(tList2).length === 40)
     }
   }
 }
