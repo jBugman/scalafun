@@ -71,7 +71,12 @@ class AnagramsSuite extends FunSuite {
     assert(combinations(abba).toSet === abbacomb.toSet)
   }
 
-
+  test("occurrencesSum: lard + r") {
+    val lard = List(('a', 1), ('d', 1), ('l', 1), ('r', 1))
+    val r = List(('r', 1))
+    val larrd = List(('a', 1), ('d', 1), ('l', 1), ('r', 2))
+    assert(occurrencesSum(List(lard, r)) === larrd)
+  }
 
   test("sentence anagrams: []") {
     val sentence = List()
@@ -103,6 +108,6 @@ class AnagramsSuite extends FunSuite {
       List("Linux", "rulez")
     )
     assert(sentenceAnagrams(sentence).toSet === anas.toSet)
-  }  
+  }
 
 }
